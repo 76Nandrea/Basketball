@@ -1,0 +1,43 @@
+﻿@page "/playerindex"
+
+@using Microsoft.AspNetCore.Components.QuickGrid
+@using Shared.DTO
+@inject HttpClient HttpClient
+@inject NavigationManager NavManager
+@rendermode InteractiveServer
+
+
+<h3>PlayerIndext</h3>
+@if (playerGrid is null)
+{
+    <p>Loading....</p>
+}
+else
+{
+    <div class="flex-md-column">
+        <a href="/playeradd" class="btn btn-outline-info mt-4">új játékos hozzáadása</a>
+    </div>
+    <div class="guickgrid">
+        <QuickGrid Class="table" ItemsProvider="@playerGrid">
+            <PropertyColumn Title="Név" Property="@(fn=>fn.FullName)" />
+            <PropertyColumn Title="Születési dátum" Property="@(sze=>sze.BDay)" Format="yyyy.MM.dd" />
+            <PropertyColumn Title="Életkor" Property="@(e=>e.Age)" />
+            <PropertyColumn Title="Csapatnév" Property="@(p => p.TeamName)" />
+        </QuickGrid>
+    </div>
+}
+
+    @code {
+        List<PlayerDTO> playerList = new();
+        GridItemsProvider<PlayerDTO>? playerGrid;
+        
+        protected override async Task OnInitializedAsync()
+    {
+        playerList = await HttpClient.GetFromJsonAsync<List<PlayerDTO>>("Basketball/Player");
+        playerGrid = async request =>
+        {
+            return GridItemsProviderResult.From(playerList, playerList.Count);
+        };
+    }
+
+}
