@@ -1,0 +1,77 @@
+﻿@page "/teamdelete"
+
+@using Shared.DTO
+@inject HttpClient HttpClient
+@inject NavigationManager NavManager
+
+
+<h3>TeamDelete</h3>
+
+@if (deleteTeam is null)
+{
+    <p>Loading...</p>
+}
+else
+{
+    <dl class="row">
+        <dt class="col-sm-2">Csapatnév:</dt>
+        <dt class="col-sm-10">@deleteTeam.TeamName</dt>
+    </dl>
+
+    <div class="row">
+        <div class="col-md-4">
+            <EditForm Model="deleteTeam" OnValidSubmit="DeleteTeam" FormName="deleteTeam" Enhance>
+                <button type="submit" class="btn btn-danger md-4">Delete</button>
+                <a href="/teamindex" class="btn btn-success">Back</a>
+
+            </EditForm>
+
+        </div>
+    </div>
+}
+
+
+@code {
+    private TeamDTO deleteTeam;
+
+    [SupplyParameterFromQuery]
+    private int TeamId { get; set; }
+
+    private string errormessage = "";
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        var TeamList = await HttpClient.GetFromJsonAsync<List<TeamDTO>>("Basketball/Team");
+        if (TeamList is not null)
+        {
+            deleteTeam = TeamList.FirstOrDefault(u => u.TeamId == TeamId);
+        }
+        else
+        {
+            NavManager.NavigateTo("/error");
+        }
+
+    }
+
+    public async Task DeleteTeam()
+    {
+        try
+        {
+            var response = await HttpClient.DeleteAsync($"DataManagment/DeleteTeam/{TeamId}");
+            if (response.IsSuccessStatusCode)
+            {
+                NavManager.NavigateTo("/teamindex");
+            }
+            else
+            {
+                NavManager.NavigateTo("/error");
+            }
+        }
+        catch (HttpRequestException ex)
+        {
+            errormessage = $"Hiba történt a feldolgozás közben: {ex.Message}";
+        }
+
+    }
+}

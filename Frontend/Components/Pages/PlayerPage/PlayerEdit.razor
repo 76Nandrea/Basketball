@@ -1,0 +1,73 @@
+﻿@page "/editplayer"
+@using Shared.DTO
+@inject HttpClient HttpClient
+@inject NavigationManager NavManager
+@rendermode InteractiveServer
+
+
+<h3>PlayerEdit</h3>
+
+<div class="row">
+    <div class="col-md-4">
+        <EditForm Model="editPlayer" OnValidSubmit="UpdatePlayer" FormName="editPlayer" Enhance>
+            <DataAnnotationsValidator />
+            <ValidationSummary class="text-danger" />
+            <div class="mb-3">
+                <label for="fn" class="form-label">FName:</label>
+                <InputText id="fn" class="form-control" @bind-Value="editPlayer.FName" />
+                <ValidationMessage class="text-danger" For="()=>editPlayer.FName" />
+            </div>
+            <div class="mb-3">
+                <label for="ln" class="form-label">LName:</label>
+                <InputText id="ln" class="form-control" @bind-Value="editPlayer.LNAme" />
+                <ValidationMessage class="text-danger" For="()=>editPlayer.LNAme" />
+            </div>
+            <div class="mb-3">
+                <label for="bd" class="form-label">BDate:</label>
+                <InputDate id="bd" class="form-control" @bind-Value="editPlayer.BDay" />
+                <ValidationMessage class="text-danger" For="()=>editPlayer.BDay" />
+            </div>
+            <div class="mb-3">
+                <label for="teamSelect" class="form-label" >Csapat</label>
+                <InputSelect id="teamSelect" @bind-Value="editPlayer.TeamId"  class="form-control">
+                    <option value="">Válassz egy csapatot</option>
+                    @foreach (var item in teamList)
+                    {
+                        <option value="@item.TeamId">@item.TeamName</option>
+                    }
+                </InputSelect>
+                <ValidationMessage class="text-danger" For="()=>editPlayer.TeamId" />
+            </div>
+
+            
+            <button type="submit" class="btn btn-primary mb-4">Mentés</button>
+            <a href="/playerindex" class="btn btn-success mb-4">vissza</a>
+        </EditForm>
+    </div>
+</div>
+
+
+@code {
+    [SupplyParameterFromQuery]
+    public int Id { get; set; }
+
+    [SupplyParameterFromForm]
+    private UpdatePlayerDTO? editPlayer { get; set; } = new();
+
+
+    private List<TeamDTO>teamList= new();
+
+
+    protected override async Task OnInitializedAsync()
+    {
+        editPlayer = await HttpClient.GetFromJsonAsync<UpdatePlayerDTO>($"Basketball/searchPlayer/{Id}");
+        teamList = await HttpClient.GetFromJsonAsync<List<TeamDTO>>($"Basketball/Team"); 
+    }
+
+    private async Task UpdatePlayer()
+    {
+        await HttpClient.PatchAsJsonAsync($"DataManagment/PlayerPatch/{Id}",editPlayer);
+        NavManager.NavigateTo("/playerindex");
+    }
+
+}

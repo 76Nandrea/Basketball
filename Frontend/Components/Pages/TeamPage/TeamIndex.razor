@@ -1,0 +1,46 @@
+﻿@page "/teamindex"
+
+@using Microsoft.AspNetCore.Components.QuickGrid
+@using Shared.DTO
+@inject HttpClient HttpClient
+@inject NavigationManager NavManager
+@rendermode InteractiveServer
+
+
+<h3>TeamIndex</h3>
+@if (teamGrid is null)
+{
+    <p>Loading....</p>
+}
+else
+{
+    <div class="quickgrid">
+        <QuickGrid Class="table" ItemsProvider="@teamGrid">
+            <PropertyColumn Title="Csapatnév" Property="@(p=>p.TeamName)" />
+            <TemplateColumn Context="team">
+                <a href="@($"/editteam?Id={team.TeamId}")" class="btn btn-outline-info">Edit</a>
+                <a href="@($"/teamdelete?TeamId={team.TeamId}")" class="btn btn-outline-danger">Delete</a>
+            </TemplateColumn>
+        </QuickGrid>
+    </div>
+}
+
+
+@code {
+    List<TeamDTO> teamList = new();
+    GridItemsProvider<TeamDTO>? teamGrid;
+
+
+    protected override async Task OnInitializedAsync()
+    {
+
+        teamList = await HttpClient.GetFromJsonAsync<List<TeamDTO>>("Basketball/Team");
+
+
+        teamGrid = async request =>
+        {
+            return GridItemsProviderResult.From(teamList, teamList.Count);
+        };
+    }
+
+}

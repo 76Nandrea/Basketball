@@ -14,30 +14,100 @@
 }
 else
 {
+    <div class=" row">
+        <div class="col-md-4">
+        <EditForm  Model="searchPlayer" OnValidSubmit="Search" FormName="Search" Enhance>
+                <div class="md-3">
+                    <label for="sch" class="form-label"> Keresés</label>
+                    <InputText id="sch"@bind-Value="searchPlayer" class="form-control"/>
+                </div>
+                <div class="text-danger"><strong>@errormessage</strong></div>
+                <button type="submit" class="btn btn-outline-primary mt-4">Keresés</button>
+        </EditForm>
+            <div class="flex-md-column">
+                <button onclick ="@ResetSearch" class="btn btn-info mt-4">Teljes lista</button>
+            </div>
+        </div>
+    </div>
+    
     <div class="flex-md-column">
         <a href="/playeradd" class="btn btn-outline-info mt-4">új játékos hozzáadása</a>
     </div>
-    <div class="guickgrid">
+    <div class="quickgrid">
         <QuickGrid Class="table" ItemsProvider="@playerGrid">
             <PropertyColumn Title="Név" Property="@(fn=>fn.FullName)" />
             <PropertyColumn Title="Születési dátum" Property="@(sze=>sze.BDay)" Format="yyyy.MM.dd" />
             <PropertyColumn Title="Életkor" Property="@(e=>e.Age)" />
-            <PropertyColumn Title="Csapatnév" Property="@(p => p.TeamName)" />
+            <PropertyColumn Title="Csapatnév" Property="@(p=>p.TeamName)" />
+                <TemplateColumn Context="player">
+                    <a href="@($"/editplayer?Id={player.PlayerId}")" class="btn btn-outline-info">Edit</a>
+                </TemplateColumn>
         </QuickGrid>
     </div>
 }
 
-    @code {
-        List<PlayerDTO> playerList = new();
-        GridItemsProvider<PlayerDTO>? playerGrid;
-        
-        protected override async Task OnInitializedAsync()
+@code {
+    List<PlayerDTO> playerList = new();
+    GridItemsProvider<PlayerDTO>? playerGrid;
+
+    private string searchPlayer = string.Empty;
+    private string errormessage = string.Empty;
+    private bool isLoading = false;
+
+
+    protected override async Task OnInitializedAsync()
     {
-        playerList = await HttpClient.GetFromJsonAsync<List<PlayerDTO>>("Basketball/Player");
-        playerGrid = async request =>
-        {
-            return GridItemsProviderResult.From(playerList, playerList.Count);
-        };
+        await LoadPlayersAsync("Basketball/Player");
     }
 
+
+    private async Task LoadPlayersAsync(string url)
+    {
+        errormessage = string.Empty;
+        //ha már fut a folyamat akkor kilép
+        if (isLoading)
+            return;
+
+        isLoading = true; //jelöljük, hogy a folyamat már betöltött
+
+        try
+        {
+            playerList = await HttpClient.GetFromJsonAsync<List<PlayerDTO>>(url);
+            UpdateGrid();
+        }
+        catch (Exception ex)
+        {
+            errormessage = $"A keresésre nincs találat: {ex.Message}";
+        }
+        finally
+        {
+            isLoading = false;  ///betöltés végén visszallítjuk az eredeti alapot
+        }
+    }
+
+    private void UpdateGrid()
+    {
+        playerGrid = async request =>
+       {
+           return GridItemsProviderResult.From(playerList, playerList.Count);
+       };
+    }
+
+    private async Task Search()
+    {
+        if (string.IsNullOrWhiteSpace(searchPlayer))
+        {
+            errormessage = "A mező kitöltése kötelező!";
+        }
+        else
+        {
+            await LoadPlayersAsync($"Basketball/SearchP/{searchPlayer}");
+            searchPlayer = string.Empty;
+        }
+    }
+
+    private async Task ResetSearch()
+    {
+        await LoadPlayersAsync("Basketball/Player");
+    }
 }

@@ -1,0 +1,53 @@
+﻿@page "/gameindex"
+
+@using Microsoft.AspNetCore.Components.QuickGrid
+@using Shared.DTO
+@inject HttpClient HttpClient
+@inject NavigationManager NavManager
+@rendermode InteractiveServer
+
+
+<h3>GameIndex</h3>
+@if (gameGrid is null)
+{
+    <p>Loading....</p>
+}
+else
+{
+    <div class="quickgrid">
+        <QuickGrid Class="table" ItemsProvider="@gameGrid">
+            <PropertyColumn Title="Játék helye" Property="@(p=>p.Location)" />
+            <PropertyColumn Title="Játék időpontja" Property="@(p=>p.GameDate)" />
+            <TemplateColumn Title="Game" Context="game" >
+                @foreach (var item in game.Teams)
+                {
+                    <spam>@item</spam>
+                    @if ( item != game.Teams.Last())
+                    {
+                        <spam>, </spam>
+                    }
+            }
+            </TemplateColumn>
+        </QuickGrid>
+    </div>
+}
+
+
+@code {
+    List<GameDTO> gameList = new();
+    GridItemsProvider<GameDTO>? gameGrid;
+
+
+    protected override async Task OnInitializedAsync()
+    {
+
+        gameList = await HttpClient.GetFromJsonAsync<List<GameDTO>>("Basketball/Games");
+
+
+        gameGrid = async request =>
+        {
+            return GridItemsProviderResult.From(gameList, gameList.Count);
+        };
+    }
+
+}
