@@ -12,11 +12,11 @@ namespace Backend.DAL.Model
         [MaxLength(25)]
         public string TeamName { get; set; }
 
-        // kapcsolat a playerhez
+        // kapcsolat a playerhez - egy csapatnak több játékosa is van
         [JsonIgnore]
         public virtual ICollection<Player> Players { get; set; } = new List<Player>();
 
-        //kapcsolat a Gamehez
+        //kapcsolat a Gamehez - egy meccsen több csapat is játszhat 
         public virtual List<Game> Games { get; set; } = new List<Game>();
     }
 }

@@ -15,7 +15,7 @@ namespace Backend.DAL.Model
         public DateTime GameDate { get; set; }
 
 
-        //kapcsolat a Teamhez
+        //kapcsolat a Teamhez - egy csapat többször is játszhat 
         public virtual List<Team> Teams { get; set; } = new List<Team>();
     }
 }

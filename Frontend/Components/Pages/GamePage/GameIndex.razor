@@ -18,7 +18,7 @@ else
         <QuickGrid Class="table" ItemsProvider="@gameGrid">
             <PropertyColumn Title="Játék helye" Property="@(p=>p.Location)" />
             <PropertyColumn Title="Játék időpontja" Property="@(p=>p.GameDate)" />
-            <TemplateColumn Title="Game" Context="game" >
+            <TemplateColumn Title="Csapatok" Context="game" >
                 @foreach (var item in game.Teams)
                 {
                     <spam>@item</spam>

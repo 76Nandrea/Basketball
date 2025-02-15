@@ -22,9 +22,9 @@ namespace Backend.DAL.Model
 
         public int Age => DateTime.Today.Year - BDay.Year - (DateTime.Today < BDay.AddYears(DateTime.Today.Year - BDay.Year) ? 1 : 0);
 
-        public int TeamId { get; set; }
+        public int TeamId { get; set; } // team id - nem csak objektum kell
 
-        public Team? Team { get; set; } // Itt van a Team objektum
+        public Team? Team { get; set; } // Itt van a Team objektum 
 
     }
 }
